@@ -248,18 +248,15 @@
 
 <!-- ============================================================
   FIREBASE SETUP
-  1. Go to https://console.firebase.google.com
-  2. Create a project and a Firestore database (test mode)
-  3. Register a Web App and copy your firebaseConfig values
-  4. Replace the placeholder values below with your own
-  5. Set Firestore rules (see guide in the invitation)
+  Replace the 6 values in firebaseConfig below with your own.
+  Get them from: Firebase Console > Project Settings > Your Apps
   ============================================================ -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-analytics.js";
-  import { getFirestore, collection, addDoc, getDocs, orderBy, query }
-    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+<!-- Firebase compat SDKs (v9 compat mode — most reliable for single HTML files) -->
+<script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-analytics.js"></script>
+
+<script>
   // ▼▼▼ REPLACE THESE WITH YOUR FIREBASE CONFIG VALUES ▼▼▼
   const firebaseConfig = {
     apiKey:             "AIzaSyCWa8UB4SdNeqM-b1UqO8-UOhsMoc-uYOY",
@@ -274,13 +271,9 @@
 
   const ADMIN_PASSWORD = "bennett2025"; // ← Change this to your preferred password
 
-  let db;
-  try {
-    const app = initializeApp(firebaseConfig);
-    db = getFirestore(app);
-  } catch(e) {
-    console.error("Firebase init error:", e);
-  }
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  console.log("Firebase initialised OK, db:", db);
 
   // ── SUBMIT RSVP ──────────────────────────────────────────
   window.submitRsvp = async function() {
@@ -300,33 +293,21 @@
     btn.textContent = 'Sending…';
     document.getElementById('rsvpError').style.display = 'none';
 
-    const payload = {
-      name,
-      email,
-      attending: attend,
-      guests: attend === 'yes' ? parseInt(guests) || 1 : 0,
-      note,
-      timestamp: new Date().toISOString()
-    };
-
-    console.log("STEP 1 - payload built:", payload);
-    console.log("STEP 2 - db:", db);
-
-    const writePromise = addDoc(collection(db, "rsvps"), payload)
-      .then(ref => { console.log("STEP 3 - SUCCESS, ref id:", ref.id); return ref; })
-      .catch(err => { console.error("STEP 3 - FAILED:", err.code, err.message); throw err; });
-
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => { console.error("STEP 3 - TIMEOUT after 10s"); reject(new Error("Request timed out")); }, 10000)
-    );
-
     try {
-      await Promise.race([writePromise, timeoutPromise]);
+      const docRef = await db.collection("rsvps").add({
+        name:      name,
+        email:     email,
+        attending: attend,
+        guests:    attend === 'yes' ? parseInt(guests) || 1 : 0,
+        note:      note,
+        timestamp: new Date().toISOString()
+      });
+      console.log("RSVP saved, doc id:", docRef.id);
       document.getElementById('rsvpForm').style.display = 'none';
       document.getElementById('rsvpSuccess').style.display = 'block';
       document.getElementById('successName').textContent = name.split(' ')[0];
     } catch(err) {
-      console.error("RSVP catch block:", err.message);
+      console.error("RSVP error:", err.code, err.message);
       btn.disabled = false;
       btn.textContent = 'Send My Reply';
       document.getElementById('rsvpError').style.display = 'block';
@@ -359,13 +340,12 @@
     const wrap = document.getElementById('rsvpTableWrap');
     wrap.innerHTML = '<div class="loading-msg">Loading responses from Firestore…</div>';
     try {
-      const q = query(collection(db, "rsvps"), orderBy("timestamp", "desc"));
-      const snapshot = await getDocs(q);
+      const snapshot = await db.collection("rsvps").orderBy("timestamp", "desc").get();
       cachedRsvps = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       renderTable(cachedRsvps);
     } catch(err) {
-      console.error("Error loading responses:", err);
-      wrap.innerHTML = '<div class="no-rsvps">Could not load responses. View directly in the Firebase Console instead.</div>';
+      console.error("Load error:", err.code, err.message);
+      wrap.innerHTML = '<div class="no-rsvps">Could not load responses (' + err.message + '). Check Firestore rules allow reads, or view in Firebase Console.</div>';
     }
   }
 
@@ -381,31 +361,26 @@
     const att    = rsvps.filter(r => r.attending === 'yes').length;
     const guests = rsvps.filter(r => r.attending === 'yes').reduce((s, r) => s + (r.guests || 1), 0);
 
-    let html = `<div class="stats-grid">
-      <div class="stat-box" style="border-top:2px solid #daa520;"><div class="stat-label">Total Replies</div><div class="stat-value">${rsvps.length}</div></div>
-      <div class="stat-box" style="border-top:2px solid #28a745;"><div class="stat-label">Attending</div><div class="stat-value">${att}</div></div>
-      <div class="stat-box" style="border-top:2px solid #8fd9fb;"><div class="stat-label">Total Guests</div><div class="stat-value">${guests}</div></div>
-    </div>
-    <div class="table-scroll">
-      <table class="rsvp-table">
-        <thead><tr><th>Name</th><th>Email</th><th>Attending</th><th>Guests</th><th>Note</th><th>Submitted</th></tr></thead>
-        <tbody>`;
+    let html = '<div class="stats-grid">'
+      + '<div class="stat-box" style="border-top:2px solid #daa520;"><div class="stat-label">Total Replies</div><div class="stat-value">' + rsvps.length + '</div></div>'
+      + '<div class="stat-box" style="border-top:2px solid #28a745;"><div class="stat-label">Attending</div><div class="stat-value">' + att + '</div></div>'
+      + '<div class="stat-box" style="border-top:2px solid #8fd9fb;"><div class="stat-label">Total Guests</div><div class="stat-value">' + guests + '</div></div>'
+      + '</div><div class="table-scroll"><table class="rsvp-table">'
+      + '<thead><tr><th>Name</th><th>Email</th><th>Attending</th><th>Guests</th><th>Note</th><th>Submitted</th></tr></thead><tbody>';
 
-    rsvps.forEach(r => {
-      const badge = r.attending === 'yes'
+    rsvps.forEach(function(r) {
+      var badge = r.attending === 'yes'
         ? '<span class="badge-yes">Accepts</span>'
         : '<span class="badge-no">Declines</span>';
-      const ts = r.timestamp
-        ? new Date(r.timestamp).toLocaleString('en-GB')
-        : '—';
-      html += `<tr>
-        <td>${r.name || '—'}</td>
-        <td style="font-size:12px;">${r.email || '—'}</td>
-        <td>${badge}</td>
-        <td style="text-align:center;">${r.attending === 'yes' ? (r.guests || 1) : '—'}</td>
-        <td style="font-style:italic;font-size:12px;max-width:140px;">${r.note || '—'}</td>
-        <td style="font-size:11px;color:#7a9eb0;">${ts}</td>
-      </tr>`;
+      var ts = r.timestamp ? new Date(r.timestamp).toLocaleString('en-GB') : '—';
+      html += '<tr>'
+        + '<td>' + (r.name || '—') + '</td>'
+        + '<td style="font-size:12px;">' + (r.email || '—') + '</td>'
+        + '<td>' + badge + '</td>'
+        + '<td style="text-align:center;">' + (r.attending === 'yes' ? (r.guests || 1) : '—') + '</td>'
+        + '<td style="font-style:italic;font-size:12px;max-width:140px;">' + (r.note || '—') + '</td>'
+        + '<td style="font-size:11px;color:#7a9eb0;">' + ts + '</td>'
+        + '</tr>';
     });
 
     html += '</tbody></table></div>';
@@ -414,17 +389,17 @@
 
   window.exportCSV = function() {
     if (!cachedRsvps.length) { alert('No responses to export.'); return; }
-    const header = ['Name', 'Email', 'Attending', 'Guests', 'Note', 'Timestamp'];
-    const rows = cachedRsvps.map(r => {
-      const ts = r.timestamp ? new Date(r.timestamp).toLocaleString('en-GB') : '';
+    var header = ['Name', 'Email', 'Attending', 'Guests', 'Note', 'Timestamp'];
+    var rows = cachedRsvps.map(function(r) {
+      var ts = r.timestamp ? new Date(r.timestamp).toLocaleString('en-GB') : '';
       return [r.name, r.email, r.attending, r.attending === 'yes' ? (r.guests || 1) : 0, r.note, ts]
-        .map(v => `"${String(v || '').replace(/"/g, '""')}"`)
+        .map(function(v) { return '"' + String(v || '').replace(/"/g, '""') + '"'; })
         .join(',');
     });
-    const csv  = [header.join(','), ...rows].join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
+    var csv  = [header.join(',')].concat(rows).join('\n');
+    var blob = new Blob([csv], { type: 'text/csv' });
+    var url  = URL.createObjectURL(blob);
+    var a    = document.createElement('a');
     a.href = url; a.download = 'christening_rsvps.csv'; a.click();
     URL.revokeObjectURL(url);
   };
