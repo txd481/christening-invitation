@@ -256,7 +256,7 @@
   ============================================================ -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getFirestore, collection, addDoc, getDocs, orderBy, query, serverTimestamp }
+  import { getFirestore, collection, addDoc, getDocs, orderBy, query }
     from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   // ▼▼▼ REPLACE THESE WITH YOUR FIREBASE CONFIG VALUES ▼▼▼
@@ -299,15 +299,23 @@
     btn.textContent = 'Sending…';
     document.getElementById('rsvpError').style.display = 'none';
 
+    const payload = {
+      name,
+      email,
+      attending: attend,
+      guests: attend === 'yes' ? parseInt(guests) || 1 : 0,
+      note,
+      timestamp: new Date().toISOString()
+    };
+
+    // Race the Firestore write against a 10-second timeout
+    const writePromise = addDoc(collection(db, "rsvps"), payload);
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("Request timed out")), 10000)
+    );
+
     try {
-      await addDoc(collection(db, "rsvps"), {
-        name,
-        email,
-        attending: attend,
-        guests: attend === 'yes' ? parseInt(guests) || 1 : 0,
-        note,
-        timestamp: serverTimestamp()
-      });
+      await Promise.race([writePromise, timeoutPromise]);
       document.getElementById('rsvpForm').style.display = 'none';
       document.getElementById('rsvpSuccess').style.display = 'block';
       document.getElementById('successName').textContent = name.split(' ')[0];
@@ -316,6 +324,10 @@
       btn.disabled = false;
       btn.textContent = 'Send My Reply';
       document.getElementById('rsvpError').style.display = 'block';
+      document.getElementById('rsvpError').textContent =
+        err.message === 'Request timed out'
+          ? 'Connection timed out. Please check your internet and try again.'
+          : 'Something went wrong. Please try again.';
     }
   };
 
@@ -380,8 +392,8 @@
       const badge = r.attending === 'yes'
         ? '<span class="badge-yes">Accepts</span>'
         : '<span class="badge-no">Declines</span>';
-      const ts = r.timestamp?.toDate
-        ? r.timestamp.toDate().toLocaleString('en-GB')
+      const ts = r.timestamp
+        ? new Date(r.timestamp).toLocaleString('en-GB')
         : '—';
       html += `<tr>
         <td>${r.name || '—'}</td>
@@ -401,7 +413,7 @@
     if (!cachedRsvps.length) { alert('No responses to export.'); return; }
     const header = ['Name', 'Email', 'Attending', 'Guests', 'Note', 'Timestamp'];
     const rows = cachedRsvps.map(r => {
-      const ts = r.timestamp?.toDate ? r.timestamp.toDate().toLocaleString('en-GB') : '';
+      const ts = r.timestamp ? new Date(r.timestamp).toLocaleString('en-GB') : '';
       return [r.name, r.email, r.attending, r.attending === 'yes' ? (r.guests || 1) : 0, r.note, ts]
         .map(v => `"${String(v || '').replace(/"/g, '""')}"`)
         .join(',');
