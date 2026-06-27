@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -85,9 +84,7 @@
 
     .inv-footer { text-align: center; padding: 14px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: #c3e8f8; background: #0a3e58; }
 
-    .firebase-notice { background: #fff8e6; border: 1px solid #f0c040; border-radius: 4px; padding: 14px 18px; margin: 16px 0; font-size: 13px; color: #7a5800; font-family: 'Cormorant Garamond', serif; display: none; }
-    .firebase-notice strong { display: block; font-size: 15px; margin-bottom: 4px; }
-    .firebase-notice code { background: #fef3cd; border-radius: 3px; padding: 1px 5px; font-family: monospace; font-size: 12px; }
+
   </style>
 </head>
 <body>
@@ -187,10 +184,6 @@
     <p class="rsvp-sub">Please respond by 1st July, 2025</p>
 
     <!-- Firebase not configured warning -->
-    <div class="firebase-notice" id="firebaseNotice">
-      <strong>⚙ Firebase not yet configured</strong>
-      Open this HTML file in a text editor and replace the placeholder values in the <code>firebaseConfig</code> section at the bottom of the file with your own Firebase project credentials.
-    </div>
 
     <div id="rsvpForm">
       <div class="rsvp-form-group">
@@ -262,33 +255,22 @@
   5. Set Firestore rules (see guide in the invitation)
   ============================================================ -->
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-analytics.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import { getFirestore, collection, addDoc, getDocs, orderBy, query, serverTimestamp }
     from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   // ▼▼▼ REPLACE THESE WITH YOUR FIREBASE CONFIG VALUES ▼▼▼
   const firebaseConfig = {
-
-    apiKey:             "AIzaSyCWa8UB4SdNeqM-b1UqO8-UOhsMoc-uYOY",
-    authDomain:         "christening-martin.firebaseapp.com",
-    projectId:          "christening-martin",
-    storageBucket:      "christening-martin.firebasestorage.app",
-    messagingSenderId:  "600538118703",
-    appId:              "1:600538118703:web:2eea0c3ca6a0721afce4da",
-    measurementId:      "G-237HQQLMVP"
-
+    apiKey:            "REPLACE_WITH_YOUR_API_KEY",
+    authDomain:        "REPLACE_WITH_YOUR_AUTH_DOMAIN",
+    projectId:         "REPLACE_WITH_YOUR_PROJECT_ID",
+    storageBucket:     "REPLACE_WITH_YOUR_STORAGE_BUCKET",
+    messagingSenderId: "REPLACE_WITH_YOUR_MESSAGING_SENDER_ID",
+    appId:             "REPLACE_WITH_YOUR_APP_ID"
   };
   // ▲▲▲ REPLACE THESE WITH YOUR FIREBASE CONFIG VALUES ▲▲▲
 
-  const ADMIN_PASSWORD = "LondonAunt2021"; // ← Change this to your preferred password
-  //const analytics = getAnalytics(app);
-
-  // Check if config has been filled in
-  const isConfigured = !Object.values(firebaseConfig).some(v => v.startsWith("REPLACE_"));
-  if (!isConfigured) {
-    document.getElementById("firebaseNotice").style.display = "block";
-  }
+  const ADMIN_PASSWORD = "bennett2025"; // ← Change this to your preferred password
 
   let db;
   try {
@@ -311,11 +293,6 @@
       return;
     }
 
-    if (!isConfigured || !db) {
-      alert('Firebase is not yet configured. Please set up your firebaseConfig values first.');
-      return;
-    }
-
     const btn = document.getElementById('submitBtn');
     btn.disabled = true;
     btn.textContent = 'Sending…';
@@ -330,11 +307,9 @@
         note,
         timestamp: serverTimestamp()
       });
-
       document.getElementById('rsvpForm').style.display = 'none';
       document.getElementById('rsvpSuccess').style.display = 'block';
       document.getElementById('successName').textContent = name.split(' ')[0];
-
     } catch(err) {
       console.error("RSVP submission error:", err);
       btn.disabled = false;
@@ -367,12 +342,6 @@
   async function loadResponses() {
     const wrap = document.getElementById('rsvpTableWrap');
     wrap.innerHTML = '<div class="loading-msg">Loading responses from Firestore…</div>';
-
-    if (!isConfigured || !db) {
-      wrap.innerHTML = '<div class="no-rsvps">Firebase not configured. Add your firebaseConfig values to the HTML file.</div>';
-      return;
-    }
-
     try {
       const q = query(collection(db, "rsvps"), orderBy("timestamp", "desc"));
       const snapshot = await getDocs(q);
@@ -380,7 +349,7 @@
       renderTable(cachedRsvps);
     } catch(err) {
       console.error("Error loading responses:", err);
-      wrap.innerHTML = '<div class="no-rsvps">Could not load responses. Check your Firestore rules allow reads, or view directly in the Firebase Console.</div>';
+      wrap.innerHTML = '<div class="no-rsvps">Could not load responses. View directly in the Firebase Console instead.</div>';
     }
   }
 
