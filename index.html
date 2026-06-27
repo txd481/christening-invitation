@@ -255,7 +255,8 @@
   5. Set Firestore rules (see guide in the invitation)
   ============================================================ -->
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-analytics.js";
   import { getFirestore, collection, addDoc, getDocs, orderBy, query }
     from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -308,10 +309,15 @@
       timestamp: new Date().toISOString()
     };
 
-    // Race the Firestore write against a 10-second timeout
-    const writePromise = addDoc(collection(db, "rsvps"), payload);
+    console.log("STEP 1 - payload built:", payload);
+    console.log("STEP 2 - db:", db);
+
+    const writePromise = addDoc(collection(db, "rsvps"), payload)
+      .then(ref => { console.log("STEP 3 - SUCCESS, ref id:", ref.id); return ref; })
+      .catch(err => { console.error("STEP 3 - FAILED:", err.code, err.message); throw err; });
+
     const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error("Request timed out")), 10000)
+      setTimeout(() => { console.error("STEP 3 - TIMEOUT after 10s"); reject(new Error("Request timed out")); }, 10000)
     );
 
     try {
@@ -320,14 +326,11 @@
       document.getElementById('rsvpSuccess').style.display = 'block';
       document.getElementById('successName').textContent = name.split(' ')[0];
     } catch(err) {
-      console.error("RSVP submission error:", err);
+      console.error("RSVP catch block:", err.message);
       btn.disabled = false;
       btn.textContent = 'Send My Reply';
       document.getElementById('rsvpError').style.display = 'block';
-      document.getElementById('rsvpError').textContent =
-        err.message === 'Request timed out'
-          ? 'Connection timed out. Please check your internet and try again.'
-          : 'Something went wrong. Please try again.';
+      document.getElementById('rsvpError').textContent = 'Error: ' + err.message;
     }
   };
 
