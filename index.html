@@ -95,7 +95,7 @@
 
   <!-- Header -->
   <div class="inv-header">
-    <div class="inv-tagline">Вие сте поканени на</div>
+    <div class="inv-tagline">You are warmly invited to</div>
 
     <!-- Orthodox Trefoil Cross -->
     <div class="cross-wrap">
@@ -127,16 +127,16 @@
       </svg>
     </div>
 
-    <div class="inv-child-name">Кръщенето на<br><em>Мартин Желев</em></div>
+    <div class="inv-child-name">the Christening of<br><em>Oliver James</em></div>
   </div>
 
   <!-- Body -->
   <div class="inv-body">
     <p class="inv-verse">
-      Дойде и моят ден, сутрин рано аз да стана,<br>
-      да събудя и тате и мама и с щастливо лице,<br>
-      кръстницата в църква да ме заведе.<br>
-     <!-- <span style="font-size:12px; letter-spacing:2px; font-style:normal; color:#aacfdf;">— Luke 18:16</span> -->
+      "Let the little children come to me,<br>
+      and do not hinder them, for the kingdom of God<br>
+      belongs to such as these."<br>
+      <span style="font-size:12px; letter-spacing:2px; font-style:normal; color:#aacfdf;">— Luke 18:16</span>
     </p>
     <div class="inv-divider">
       <div class="inv-divider-line"></div>
@@ -144,96 +144,95 @@
       <div class="inv-divider-line"></div>
     </div>
     <p class="inv-intro">
-      <strong>Каня и Вас от сърце на моето кръщене.</strong>
-      <br>
-      А Вие радостта ми споделете на:
+      <strong>The Bennett Family</strong>
+      joyfully request the pleasure of your company<br>
+      as their beloved son receives the sacrament of Holy Baptism
     </p>
     <div class="details-grid">
       <div class="detail-box">
-        <div class="detail-label">Дата</div>
-        <div class="detail-value">Събота<br>15ти Август 2026<br><em>в 13 часа</em></div>
+        <div class="detail-label">Date</div>
+        <div class="detail-value">Sunday<br>13th July, 2025<br><em>at two o'clock</em></div>
       </div>
       <div class="detail-box">
-        <div class="detail-label">Място</div>
-        <div class="detail-value">Манастир Св. Спас<br>Сопот<br><em>4330</em></div>
+        <div class="detail-label">Venue</div>
+        <div class="detail-value">St. Mary's Church<br>Kensington<br><em>London, W8 4PL</em></div>
       </div>
     </div>
-
     <div class="inv-divider" style="margin-bottom:10px;">
       <div class="inv-divider-line"></div>
       <div class="inv-divider-diamond"></div>
       <div class="inv-divider-line"></div>
     </div>
-
     <p style="font-size:13px; color:#7a9eb0; font-style:italic; line-height:1.7; padding:0 8px;">
-      А после с мен се почерпете и в Тера Роза отскочете.<br>
-      Дрес код: Празнично
+      A reception will follow at Kensington Manor House.<br>
+      Dress code: Smart &amp; Celebratory
     </p>
   </div>
 
   <!-- RSVP -->
   <div class="rsvp-section">
-    <div class="rsvp-title">Моля потвърдете присъствието си</div>
-    <p class="rsvp-sub">Моля отговорете преди <b> 1ви Август 2026 </b> </p>
+    <div class="rsvp-title">Kindly Reply</div>
+    <p class="rsvp-sub">Please respond by 1st July, 2025</p>
 
     <div id="rsvpForm">
       <div class="rsvp-form-group">
-        <label for="rName">Пълно име</label>
-        <input type="text" id="rName" placeholder="Вашето пълно име">
+        <label for="rName">Full Name</label>
+        <input type="text" id="rName" placeholder="Your full name">
       </div>
       <div class="rsvp-form-group">
-        <label for="rEmail">Имейл адрес</label>
+        <label for="rEmail">Email Address</label>
         <input type="email" id="rEmail" placeholder="your@email.com">
       </div>
       <div class="two-col">
         <div class="rsvp-form-group">
-          <label for="rAttend">Отбележете присъствие</label>
+          <label for="rAttend">Attending</label>
           <select id="rAttend">
-            <option value="">Моля изберете</option>
-            <option value="yes">Радостно приемам</option>
-            <option value="no">За жалост не мога да присъствам</option>
+            <option value="">Please select</option>
+            <option value="yes">Joyfully accepts</option>
+            <option value="no">Regretfully declines</option>
           </select>
         </div>
         <div class="rsvp-form-group">
-          <label for="rGuests">Брой гости</label>
-          <input type="number" id="rGuests" min="1" max="10" placeholder="1" value="1">
+          <label for="rGuests">Number of Guests</label>
+          <input type="number" id="rGuests" min="1" max="10" value="1">
         </div>
       </div>
       <div class="rsvp-form-group">
-        <label for="rNote">Съобщение за семейството</label>
-        <textarea id="rNote" placeholder="Нещо което трябва да отбележим или каквото и да е друго (не задължително поле)..."></textarea>
+        <label for="rNote">Message to the Family</label>
+        <textarea id="rNote" placeholder="A kind word or note (optional)…"></textarea>
       </div>
-      <button class="rsvp-btn" onclick="submitRsvp()">Изпрати моя отговор</button>
+      <button class="rsvp-btn" id="submitBtn" onclick="submitRsvp()">Send My Reply</button>
+      <div class="rsvp-error" id="rsvpError"></div>
     </div>
 
     <div class="rsvp-success" id="rsvpSuccess">
       <div class="icon">✦</div>
-      <h3>Благодарим ви <span id="successName"></span></h3>
-      <p>Вашият отговор е получен и записан с благодарност.<br>Очакваме с нетърпение да отпразнуваме заедно.</p>
+      <h3>Thank you, <span id="successName"></span></h3>
+      <p>Your reply has been received with gratitude.<br>We look forward to celebrating with you.</p>
     </div>
   </div>
 
   <!-- Admin -->
   <div class="admin-section">
-    <button class="admin-toggle" onclick="toggleAdmin()">Виж отговорите</button>
+    <button class="admin-toggle" onclick="toggleAdmin()">View Responses</button>
     <div class="admin-panel" id="adminPanel">
       <div class="admin-pass-row">
         <input type="password" id="adminPass" placeholder="Enter password…" onkeydown="if(event.key==='Enter') checkAdmin()">
         <button onclick="checkAdmin()">Unlock</button>
       </div>
-      <p class="admin-login-error" id="adminLoginError">Грешна парола. Моля опитай отново.</p>
+      <p class="admin-login-error" id="adminLoginError">Incorrect password. Please try again.</p>
       <div id="adminContent" style="display:none;">
         <div class="admin-header-row">
-          <h4>Отговори на поканата</h4>
+          <h4>RSVP Responses</h4>
           <span id="rsvpCount"></span>
         </div>
-        <div id="rsvpTableWrap"><div class="loading-msg">Зарежда…</div></div>
+        <div id="rsvpTableWrap"><div class="loading-msg">Loading…</div></div>
         <button class="export-btn" onclick="exportCSV()">Export as CSV</button>
       </div>
     </div>
   </div>
 
-  <div class="inv-footer">Мартин Желев &middot; Кръщене 2026</div>
+  <div class="inv-footer">Oliver James Bennett &middot; Christening 2025</div>
 </div>
 
 <script>
@@ -253,7 +252,7 @@
   };
 
   // Admin password — change this to whatever you prefer
-  var ADMIN_PASSWORD = "LondonAunt2021";
+  var ADMIN_PASSWORD = "bennett2025";
 
   // ==========================================================
   // INITIALISE FIREBASE
@@ -272,7 +271,7 @@
     var note   = document.getElementById("rNote").value.trim();
 
     if (!name || !attend) {
-      alert("Моля въведете името си и дали ще присъствате.");
+      alert("Please enter your name and whether you are attending.");
       return;
     }
 
@@ -298,7 +297,7 @@
     })
     .catch(function(err) {
       btn.disabled = false;
-      btn.textContent = "Изпрати моя отговор";
+      btn.textContent = "Send My Reply";
       errEl.style.display = "block";
       errEl.textContent = "Error: " + err.message;
     });
